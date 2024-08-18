@@ -2,7 +2,9 @@
 # Happy Hare MMU Software
 # Installer / Updater script
 #
-# Copyright (C) 2022  moggieuk#6538 (discord) moggieuk@hotmail.com
+# Copyright (C)  2022  moggieuk#6538 (discord) moggieuk@hotmail.com
+# Modified       2024  hamyy <oudy_1999@hotmail.com>
+#                2024  Unsweeticetea <iamzevle@gmail.com>
 #
 VERSION=2.51 # Important: Keep synced with mmy.py
 
@@ -193,7 +195,7 @@ self_update() {
     cd "$SCRIPTPATH"
 
     set +e
-    BRANCH=$(timeout 3s git branch --show-current)
+    BRANCH=$(git branch --show-current)
     if [ $? -ne 0 ]; then
         echo -e "${ERROR}Error updating from github"
         echo -e "${ERROR}You might have an old version of git"
@@ -237,6 +239,7 @@ self_update() {
         echo -e "${B_GREEN}Now on git version ${GIT_VER}"
         echo -e "${B_GREEN}Running the new install script..."
         cd - >/dev/null
+        echo "$SCRIPTNAME" "${ARGS[@]}"
         exec "$SCRIPTNAME" "${ARGS[@]}"
         exit 0 # Exit this old instance
     fi
@@ -269,27 +272,40 @@ verify_not_root() {
     fi
 }
 
+#check_klipper() {
+#    if [ "$NOSERVICE" -ne 1 ]; then
+#        if [ "$(systemctl list-units --full -all -t service --no-legend | grep -F "${KLIPPER_SERVICE}")" ]; then
+#            echo -e "${INFO}Klipper ${KLIPPER_SERVICE} systemd service found"
+#        else
+#            echo -e "${ERROR}Klipper ${KLIPPER_SERVICE} systemd service not found! Please install Klipper first"
+#            exit -1
+#        fi
+#    fi
+#}
+
 check_klipper() {
-    if [ "$NOSERVICE" -ne 1 ]; then
-        if [ "$(sudo systemctl list-units --full -all -t service --no-legend | grep -F "${KLIPPER_SERVICE}")" ]; then
-            echo -e "${INFO}Klipper ${KLIPPER_SERVICE} systemd service found"
-        else
-            echo -e "${ERROR}Klipper ${KLIPPER_SERVICE} systemd service not found! Please install Klipper first"
-            exit -1
-        fi
+    running_klipper_pid=$(ps -o pid,comm,args | grep [^]]/usr/share/klipper/klippy/klippy.py | awk '{print $1}')
+    KLIPPER_PID_FILE=/var/run/klippy.pid
+
+    if [[ $(cat $KLIPPER_PID_FILE) = $running_klipper_pid ]]; then
+        echo -e "${INFO}Klipper service found"
+    else
+        echo -e "${ERROR}Klipper service not found! Please install Klipper first"
+        exit -1
+		  
     fi
 }
 
-check_octoprint() {
-    if [ "$NOSERVICE" -ne 1 ]; then
-        if [ "$(sudo systemctl list-units --full -all -t service --no-legend | grep -F "octoprint.service")" ]; then
-            echo -e "${INFO}OctoPrint service found"
-            OCTOPRINT=1
-        else
-            OCTPRINT=0
-        fi
-    fi
-}
+#check_octoprint() {
+#    if [ "$NOSERVICE" -ne 1 ]; then
+#        if [ "$(systemctl list-units --full -all -t service --no-legend | grep -F "octoprint.service")" ]; then
+#            echo -e "${INFO}OctoPrint service found"
+#            OCTOPRINT=1
+#        else
+#            OCTPRINT=0
+#        fi
+#    fi
+#}
 
 verify_home_dirs() {
     if [ ! -d "${KLIPPER_HOME}" ]; then
@@ -1218,19 +1234,38 @@ uninstall_update_manager() {
     fi
 }
 
+#restart_klipper() {
+#    if [ "$NOSERVICE" -ne 1 ]; then
+#        echo -e "${INFO}Restarting Klipper..."
+#        systemctl restart ${KLIPPER_SERVICE}
+#    else
+#        echo -e "${WARNING}Klipper restart suppressed - Please restart ${KLIPPER_SERVICE} by hand"
+#    fi
+#}
+#
+#restart_moonraker() {
+#    if [ "$NOSERVICE" -ne 1 ]; then
+#        echo -e "${INFO}Restarting Moonraker..."
+#        systemctl restart moonraker
+#    else
+#        echo -e "${WARNING}Moonraker restart suppressed - Please restart by hand"
+#    fi
+#}
 restart_klipper() {
     if [ "$NOSERVICE" -ne 1 ]; then
         echo -e "${INFO}Restarting Klipper..."
-        sudo systemctl restart ${KLIPPER_SERVICE}
+        #sudo systemctl restart klipper
+        /etc/init.d/*klipper_service restart
     else
-        echo -e "${WARNING}Klipper restart suppressed - Please restart ${KLIPPER_SERVICE} by hand"
+        echo -e "${WARNING}Klipper restart suppressed - Please restart by hand"
     fi
 }
 
 restart_moonraker() {
     if [ "$NOSERVICE" -ne 1 ]; then
         echo -e "${INFO}Restarting Moonraker..."
-        sudo systemctl restart moonraker
+        #sudo systemctl restart moonraker
+        /etc/init.d/*moonraker_service restart
     else
         echo -e "${WARNING}Moonraker restart suppressed - Please restart by hand"
     fi
@@ -1729,7 +1764,7 @@ while getopts "a:b:k:c:m:r:idsz" arg; do
         i) INSTALL=1;;
         d) UNINSTALL=1;;
         s) NOSERVICE=1;;
-        z) SKIP_UPDATE=1;;
+        z) SKIP_UPDATE=0;;
         *) usage;;
     esac
 done
@@ -1739,11 +1774,12 @@ if [ "${INSTALL}" -eq 1 -a "${UNINSTALL}" -eq 1 ]; then
     usage
 fi
 
-verify_not_root
-[ -z "${SKIP_UPDATE}" ] && {
-    self_update # Make sure the repo is up-to-date on correct branch
-}
-check_octoprint
+#verify_not_root
+#[ -z "${SKIP_UPDATE}" ] && {
+    #self_update # Make sure the repo is up-to-date on correct branch
+
+#}
+#check_octoprint
 verify_home_dirs
 check_klipper
 cleanup_old_ercf
