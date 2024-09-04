@@ -212,7 +212,7 @@ self_update() {
 
     set +e
     # timeout is unavailable on MIPS
-    if ["$IS_MIPS" -ne 1]; then
+    if [ "$IS_MIPS" -ne 1 ]; then
         BRANCH=$(git branch --show-current)
     else
         BRANCH=$(timeout 3s git branch --show-current)
@@ -287,7 +287,7 @@ function nextsuffix {
 }
 
 verify_not_root() {
-    if [ "$IS_MIPS" -ne 1]; then
+    if [ "$IS_MIPS" -ne 1 ]; then
         if [ "$EUID" -eq 0 ]; then
             echo -e "${ERROR}This script must not run as root"
             exit -1
