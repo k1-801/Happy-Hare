@@ -18,7 +18,7 @@ ARGS=( "$@" )
 # Creality K1 series printers run on MIPS, with a limited instruction set and different default klipper directories
 # Checking for machine type is the easiest way so far to spot them (will be set to 1 if on MIPS):
 IS_MIPS=0
-if [[$(uname -m) = "mips"]]; then
+if [[ $(uname -m) = "mips" ]]; then
     IS_MIPS=1
 fi
 
@@ -31,7 +31,7 @@ OLD_KLIPPER_CONFIG_HOME="${HOME}/klipper_config"
 SENSORS_SECTION="FILAMENT SENSORS"
 LED_SECTION="MMU OPTIONAL NEOPIXEL"
 
-if [ "$IS_MIPS" -eq 1]; then
+if [ "$IS_MIPS" -eq 1 ]; then
     KLIPPER_HOME="/usr/share/klipper"
     MOONRAKER_HOME="/usr/data/moonraker/moonraker"
     KLIPPER_CONFIG_HOME="/usr/data/printer_data/config"
