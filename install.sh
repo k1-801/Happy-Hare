@@ -299,7 +299,7 @@ verify_not_root() {
 
 check_klipper() {
     if [ "$NOSERVICE" -ne 1 ]; then
-        if [ "$IS_MIPS" -ne 1]; then
+        if [ "$IS_MIPS" -ne 1 ]; then
             if [ "$(systemctl list-units --full -all -t service --no-legend | grep -F "${KLIPPER_SERVICE}")" ]; then
                 echo -e "${INFO}Klipper ${KLIPPER_SERVICE} systemd service found"
             else
@@ -322,9 +322,9 @@ check_klipper() {
 }
 
 check_octoprint() {
-    if [ "$IS_MIPS" -eq 1]; then
+    if [ "$IS_MIPS" -eq 1 ]; then
         OCTOPRINT=0 # Octoprint can not be set up on MIPS
-    elif [ "$NOSERVICE" -ne 1]; then
+    elif [ "$NOSERVICE" -ne 1 ]; then
         if [ "$(sudo systemctl list-units --full -all -t service --no-legend | grep -F "octoprint.service")" ]; then
             echo -e "${INFO}OctoPrint service found"
             OCTOPRINT=1
@@ -1273,7 +1273,7 @@ restart_klipper() {
     if [ "$NOSERVICE" -ne 1 ]; then
         echo -e "${INFO}Restarting Klipper..."
 
-        if [ "$IS_MIPS" -ne 1]; then
+        if [ "$IS_MIPS" -ne 1 ]; then
             sudo systemctl restart ${KLIPPER_SERVICE}
         else
             set +e
@@ -1289,7 +1289,7 @@ restart_moonraker() {
     if [ "$NOSERVICE" -ne 1 ]; then
         echo -e "${INFO}Restarting Moonraker..."
 
-        if [ "$IS_MIPS" -ne 1]; then
+        if [ "$IS_MIPS" -ne 1 ]; then
             sudo systemctl restart moonraker
         else
             set +e
